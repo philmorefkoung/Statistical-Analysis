@@ -1,0 +1,168 @@
+---
+title: "proj"
+author: "philmore koung"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{R}
+library(car)
+data_proj <- read.csv("2019.csv")
+library(olsrr)
+#summary(data)
+fit <- lm(Score~GDP.per.capita+Social.support+Healthy.life.expectancy+Freedom.to.make.life.choices+Perceptions.of.corruption, data= data)
+
+fit.transformed <- lm(sqrt(Score)~GDP.per.capita+Social.support+Healthy.life.expectancy+Freedom.to.make.life.choices+Perceptions.of.corruption, data=data)
+#summary(fit.transformed)
+MS_ALL = ols_step_all_possible(fit.transformed)
+var <- MS_ALL[which.max(MS_ALL$adjr),]; var
+vif(fit.transformed)
+plot(fit.transformed)
+```
+```{r}
+# Ensure that data values >= 0
+range(data_proj$Overall.rank)
+range(data_proj$Score)
+range(data_proj$GDP.per.capita)
+range(data_proj$Social.support)
+range(data_proj$Healthy.life.expectancy)
+range(data_proj$Freedom.to.make.life.choices)
+range(data_proj$Generosity)
+range(data_proj$Perceptions.of.corruption)
+
+# checking for nulls
+is.null(data_proj$Overall.rank)
+is.null(data_proj$Score)
+is.null(data_proj$GDP.per.capita)
+is.null(data_proj$Social.support)
+is.null(data_proj$Healthy.life.expectancy)
+is.null(data_proj$Freedom.to.make.life.choices)
+is.null(data_proj$Generosity)
+is.null(data_proj$Perceptions.of.corruption)
+```
+```{r}
+#rename columns for easier use
+colnames(data_proj) <- c("rank", "country", "y", "x1", "x2", "x3", "x4", "x5", "x6", "continent")
+
+# fit the full model
+proj_fit <- lm(data = data_proj, y ~ x1 + x2 + x3 + x4 + x5 + x6)
+
+summary(proj_fit)
+
+# find residuals
+library(MASS)
+stand_proj <- stdres(proj_fit)
+stand_range <- range(stand_proj)
+
+stud_proj <- studres(proj_fit)
+stud_range <- range(stud_proj)
+
+rstud_proj(proj_fit)
+rstud_range(rstud_proj)
+
+# plots
+barplot(height = stand_proj, names.arg = 1:156,
+        main = "Standardized Residuals", xlab = "Index",
+        ylab = "Standardized Resid", ylim = c(-4,4))
+abline(h = 3, col = 'red', lwd = 2)
+abline(h = -3, col = 'red', lwd = 2)
+
+barplot(height = stud_proj, names.arg = 1:156,
+        main = "Standardized Residuals", xlab = "Index",
+        ylab = "Standardized Resid", ylim = c(-4,4))
+abline(h = 3, col = 'blue', lwd = 2)
+abline(h = -3, col = 'blue', lwd = 2)
+
+barplot(height = rstud_proj, names.arg = 1:156,
+        main = "Standardized Residuals", xlab = "Index",
+        ylab = "Standardized Resid", ylim = c(-4,4))
+abline(h = 3, col = 'green', lwd = 2)
+abline(h = -3, col = 'green', lwd = 2)
+
+# find the possible influential points and or outliars 
+which(rstud_proj > 3.000)
+which(rstud_proj < -3.000)
+
+data_proj$country[148]
+data_proj$country[152]
+```
+```{R}
+proj_inf <- influence.measures(proj_fit)
+
+# which indicies have influential points
+summary(proj_inf)
+
+barplot(height = proj_inf$infmat[, "cook.d"], names.arg=1:156,
+        main = "Cook's plot",
+        xlab = "Index",
+        ylab = "Cook's D")
+
+barplot(height = proj_inf$infmat[, "dfb.x1"],
+        main = "DFBETAS plot (X1)",
+        xlab = "Index",
+        ylab = "DFBETAS")
+
+barplot(height = proj_inf$infmat[, "dfb.x2"],
+        main = "DFBETAS plot (X2)",
+        xlab = "Index",
+        ylab = "DFBETAS")
+
+barplot(height = proj_inf$infmat[, "dfb.x3"],
+        main = "DFBETAS plot (X3)",
+        xlab = "Index",
+        ylab = "DFBETAS")
+
+barplot(height = proj_inf$infmat[, "dfb.x4"],
+        main = "DFBETAS plot (X4)",
+        xlab = "Index",
+        ylab = "DFBETAS")
+barplot(height = proj_inf$infmat[, "dfb.x5"],
+        main = "DFBETAS plot (X5)",
+        xlab = "Index",
+        ylab = "DFBETAS")
+
+barplot(height = proj_inf$infmat[, "dfb.x6"],
+        main = "DFBETAS plot (X6)",
+        xlab = "Index",
+        ylab = "DFBETAS")
+
+barplot(height = proj_inf$infmat[, "hat"], names.arg=1:156,
+        main = "Hat plot",
+        xlab = "Index",
+        ylab = "Hat")
+
+barplot(height = proj_inf$infmat[, "cov.r"], names.arg=1:156,
+        main = "COVRATIO",
+        xlab = "Index",
+        ylab = "Hat")
+```
+```{R}
+library(car)
+vif(proj_fit)
+
+residualPlot(proj_fit, type = "rstudent", quadratic = F,
+             col = "green",
+             pch = 16)
+```
+
+```{R}
+proj.sqrt <- data.frame(rank = data.proj[,1],
+                        country = data_proj[,2], sqrt_y = sqrt(data_proj[,3]),
+                        x1 = data_proj[,4], x2 = data_proj[,5], x3 = data_proj[,6],
+                        x4 = data_proj[,7], x5 = data_proj[,8], x6 = data_proj[,9],
+                        continent = data_proj[,10])
+library(reshape2)
+library(ggplot2)
+
+data_proj_2 <- melt(proj.sqrt, id.vars = 'sqrt_y')
+ggplot(data_proj_2) + gemo_jitter(aes(value, sqrt_y, colour = variable )) + 
+    facet_wrap(~variable, scales = "free_x")
+
+data_proj_2 <- melt(proj.sqrt, id.vars = 'sqrt_y')
+ggplot(data_proj_2) + gemo_jitter(aes(value, sqrt_y, colour = variable )) + 
+    geom_smooth(aes(value, sqrt_y, colour - variable), method = lm, se = FALSE) +
+    facet_wrap(~variable, scales = "free_x")
+
+fit_transformed <- lm(data = proj.sqrt, sqrt_y ~ x1 + x2 + x3 + x4 + x5 + x6)
+summary(fit_transformed)
+```
