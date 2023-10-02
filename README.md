@@ -1,7 +1,7 @@
 
 Statistical Analysis on Data from Gallup World Research 
 
-# Introduction***
+# Introduction
 
 This dataset from Kaggle is a small portion of a report from Gallup World Research on Wolrd Happiness in 2019 containing 
 scores from 156 countries measuring 7 key variables. Each country had at least 1000 observations which were then computed into national averages for each variable. Missing values for this dataset were filled with a regression value based on the previous 3 years of data. 
@@ -19,7 +19,7 @@ The remaining 3 out of 7 variables were collected outside of the Poll. GDP was c
 
 ## Residuals 
 
-Utilizing Standardized, Studentized, and RStudent residuals, the two outlying countries were identified as Rwanda and Botswana (index 148 and 152). Removing these two countries would improve the residual plot but not improve the model; furthermore, there was an insufficient amount of non-statistical reasons to remove Rwanda and Botswana from the model. As such, the model proceeded with no removals of countries. The residual plot and histogram followed a random distribution and normal distribution indicating no transformation is necessary. 
+Utilizing Standardized, Studentized, and RStudent residuals, the two outlying countries were identified as Rwanda and Botswana (index 148 and 152). Removing these two countries would improve the residual plot but not improve the model; furthermore, there was an insufficient amount of non-statistical reasons to remove Rwanda and Botswana from the model. As such, the model proceeded with no removals of countries. The residual plot and histogram followed a random distribution and normal distribution indicating no transformation is necessary. Furthermore, a vif test was conducted to test for multicollinearity. Presence of this would indicate that two or more independent variables are correlated to each other and that our results may be less significant. However, our test indicated no presence of multicollinearity (a value greater than 10 would indicate this).
 <br> 
 
 ## Variable Selection 
